@@ -17,9 +17,6 @@ class RemuneracionSpider(scrapy.Spider):
     selectors = {}
     
     'https://www.portaltransparencia.cl/PortalPdT/web/guest/directorio-de-organismos-regulados'
-    'https://www.portaltransparencia.cl/PortalPdT/pdtta/-/ta/AA001/PR/PCONT/43186985'
-    
-    'https://www.portaltransparencia.cl/PortalPdT/pdtta/-/ta/AA001/PR/PCONT/'
     
     def parse(self, response):
         for year_link in response.css('a[target=_self]'):
