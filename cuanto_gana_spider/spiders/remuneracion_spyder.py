@@ -64,7 +64,7 @@ class RemuneracionSpider(scrapy.Spider):
         self.selectors[my_id] = Selector(root=root2)
         for i,line in enumerate(self.selectors[my_id].xpath('//tr')):
             if len(line.xpath('td')) > 0:
-                yield {"DEBUG": str(i), **dict(zip(self.line_titles, line.xpath('td//text()').getall()))}
+                yield dict(zip(self.line_titles, line.xpath('td//text()').getall()))
             else:
                 yield {"DEBUG": str(i) + ", len td is 0"}
         del self.selectors[my_id]
