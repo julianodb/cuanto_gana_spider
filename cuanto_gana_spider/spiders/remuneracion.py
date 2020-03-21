@@ -1030,7 +1030,7 @@ class RemuneracionSpider(scrapy.Spider):
         parser = etree.XMLParser(strip_cdata=False)
         root = etree.fromstring(response.body, parser=parser, base_url=response.url)
         content = Selector(root=root).xpath('//text()').getall()
-        inner_xml = content[0]
+        inner_xml = content[0] if len(content)>0 else ""
         root2 = etree.fromstring("<newtable>" + inner_xml + "</newtable>")
         my_id = uuid.uuid4()
         self.selectors[my_id] = Selector(root=root2)
