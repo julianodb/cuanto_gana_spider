@@ -1002,7 +1002,10 @@ class RemuneracionSpider(scrapy.Spider):
         for line in response.xpath('//tr'):
             if len(line.xpath('td')) > 0:
                 results = dict(zip(self.line_titles, line.xpath('td//text()').getall()))
-                results.update({"Organismo": response.meta['institution']})
+                results.update({
+                    "Organismo": response.meta['institution'],
+                    "Regimen": "Contrata"
+                })
                 yield results
         total_count_candidate = response.selector.re('rowCount:(\d+)')
         total_count = int(total_count_candidate[0]) if len(total_count_candidate)>0 else 0
@@ -1037,8 +1040,15 @@ class RemuneracionSpider(scrapy.Spider):
         for i,line in enumerate(self.selectors[my_id].xpath('//tr')):
             if len(line.xpath('td')) > 0:
                 results = dict(zip(self.line_titles, line.xpath('td//text()').getall()))
-                results.update({"Organismo": response.meta['institution']})
+                results.update({
+                    "Organismo": response.meta['institution'],
+                    "Regimen": "Contrata"
+                })
                 yield results
             else:
-                yield {"DEBUG": str(i) + ", len td is 0"}
+                yield {
+                    "DEBUG_MSG": str(i) + ", len td is 0",
+                    "DEBUG_Organismo": response.meta['institution'],
+                    "DEBUG_Regimen": "Contrata"
+                }
         del self.selectors[my_id]
