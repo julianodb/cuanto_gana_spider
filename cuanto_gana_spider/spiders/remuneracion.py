@@ -20,12 +20,10 @@ class RemuneracionSpider(scrapy.Spider):
         super(RemuneracionSpider, self).__init__(*args, **kwargs)
         try:
             self.start = int(start)
-            assert 0 <= self.start <= len(institutions)
         except:
             self.start = 0
         try:
             self.stop = int(stop)
-            assert 0 <= self.stop <= len(institutions)
         except:
             self.stop = len(institutions)
     
