@@ -13,7 +13,6 @@ from cuanto_gana_spider.resources import institutions
 
 class RemuneracionSpider(scrapy.Spider):
     name = 'remuneracion'
-    line_titles = []
     selectors = {}
 
     def __init__(self, start='', stop='', *args, **kwargs):
@@ -44,8 +43,8 @@ class RemuneracionSpider(scrapy.Spider):
                                   meta={'institution':response.meta['institution']})
         
     def parse_month(self, response):
-        self.line_titles = response.xpath('//th//text()').getall()
-        yield from self.yield_results(response, response.meta['institution'])
+        line_titles = response.xpath('//th//text()').getall()
+        yield from self.yield_results(response, response.meta['institution'], line_titles)
         total_count_candidate = response.selector.re('rowCount:(\d+)')
         total_count = int(total_count_candidate[0]) if len(total_count_candidate)>0 else 0
         for start_page in range(100,total_count,100):
@@ -65,8 +64,10 @@ class RemuneracionSpider(scrapy.Spider):
                 },
                 url=response.css('input[name="javax.faces.encodedURL"]').xpath('@value').get(),
                 callback=self.next_page,
-                meta={'institution':response.meta['institution']})
-        
+                meta={
+                    'institution':response.meta['institution'],
+                    'line_titles':line_titles,
+                })
         
     def next_page(self, response):
         parser = etree.XMLParser(strip_cdata=False)
@@ -76,13 +77,13 @@ class RemuneracionSpider(scrapy.Spider):
         root2 = etree.fromstring("<newtable>" + inner_xml + "</newtable>")
         my_id = uuid.uuid4()
         self.selectors[my_id] = Selector(root=root2)
-        yield from self.yield_results(self.selectors[my_id], response.meta['institution'])
+        yield from self.yield_results(self.selectors[my_id], response.meta['institution'], response.meta['line_titles'])
         del self.selectors[my_id]
     
-    def yield_results(self, selector, institution):
+    def yield_results(self, selector, institution, line_titles):
         for i,line in enumerate(selector.xpath('//tr')):
             if len(line.xpath('td')) > 0:
-                results = dict(zip(self.line_titles, line.xpath('td//text()').getall()))
+                results = dict(zip(line_titles, line.xpath('td//text()').getall()))
                 results.update({
                     "Organismo": institution,
                     "Regimen": "Contrata"
