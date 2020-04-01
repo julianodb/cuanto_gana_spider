@@ -81,6 +81,18 @@ class RemuneracionSpider(scrapy.Spider):
         del self.selectors[my_id]
     
     def yield_results(self, selector, institution, line_titles):
+        """
+        Yields results from a response.
+
+        Args:
+            selector (Selector): the parsel Selector instance from which xpath() can be called.
+            institution (str): the institution name to be added in the yielded response.
+            line_titles (list): list of strings to be used as keys for the result dictionary.
+
+        Yields:
+            dict: zip of line_titles and response's //tr/td//text()
+        """
+
         for i,line in enumerate(selector.xpath('//tr')):
             if len(line.xpath('td')) > 0:
                 results = dict(zip(line_titles, line.xpath('td//text()').getall()))
