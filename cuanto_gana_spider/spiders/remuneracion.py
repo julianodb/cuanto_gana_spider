@@ -93,7 +93,7 @@ class RemuneracionSpider(scrapy.Spider):
             dict: zip of line_titles and response's //tr/td//text()
         """
 
-        for i,line in enumerate(selector.xpath('//tr')):
+        for line in selector.xpath('//tr'):
             if len(line.xpath('td')) > 0:
                 results = dict(zip(line_titles, line.xpath('td//text()').getall()))
                 results.update({
@@ -101,9 +101,3 @@ class RemuneracionSpider(scrapy.Spider):
                     "Regimen": "Contrata"
                 })
                 yield results
-            else:
-                yield {
-                    "DEBUG_MSG": str(i) + ", len td is 0",
-                    "DEBUG_Organismo": institution,
-                    "DEBUG_Regimen": "Contrata"
-                }
