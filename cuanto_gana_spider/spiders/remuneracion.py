@@ -28,7 +28,6 @@ class RemuneracionSpider(scrapy.Spider):
             self.stop = len(institutions)
     
     def start_requests(self):
-        
         for code, institution in institutions[self.start:self.stop]:
             yield scrapy.Request('https://www.portaltransparencia.cl/PortalPdT/pdtta/-/ta/'+code+'/PR/PCONT/', meta={'institution':institution})
     
@@ -46,14 +45,7 @@ class RemuneracionSpider(scrapy.Spider):
         
     def parse_month(self, response):
         self.line_titles = response.xpath('//th//text()').getall()
-        for line in response.xpath('//tr'):
-            if len(line.xpath('td')) > 0:
-                results = dict(zip(self.line_titles, line.xpath('td//text()').getall()))
-                results.update({
-                    "Organismo": response.meta['institution'],
-                    "Regimen": "Contrata"
-                })
-                yield results
+        yield from self.yield_results(response, response.meta['institution'])
         total_count_candidate = response.selector.re('rowCount:(\d+)')
         total_count = int(total_count_candidate[0]) if len(total_count_candidate)>0 else 0
         for start_page in range(100,total_count,100):
@@ -84,18 +76,21 @@ class RemuneracionSpider(scrapy.Spider):
         root2 = etree.fromstring("<newtable>" + inner_xml + "</newtable>")
         my_id = uuid.uuid4()
         self.selectors[my_id] = Selector(root=root2)
-        for i,line in enumerate(self.selectors[my_id].xpath('//tr')):
+        yield from self.yield_results(self.selectors[my_id], response.meta['institution'])
+        del self.selectors[my_id]
+    
+    def yield_results(self, selector, institution):
+        for i,line in enumerate(selector.xpath('//tr')):
             if len(line.xpath('td')) > 0:
                 results = dict(zip(self.line_titles, line.xpath('td//text()').getall()))
                 results.update({
-                    "Organismo": response.meta['institution'],
+                    "Organismo": institution,
                     "Regimen": "Contrata"
                 })
                 yield results
             else:
                 yield {
                     "DEBUG_MSG": str(i) + ", len td is 0",
-                    "DEBUG_Organismo": response.meta['institution'],
+                    "DEBUG_Organismo": institution,
                     "DEBUG_Regimen": "Contrata"
                 }
-        del self.selectors[my_id]
